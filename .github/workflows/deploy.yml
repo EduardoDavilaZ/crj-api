@@ -23,9 +23,8 @@ jobs:
       - name: Deploy via rsync over SSH
         uses: easingthemes/ssh-deploy@v6
         env:
-          SSH_HOST: ${{ secrets.IONOS_HOST }}
-          SSH_USER: ${{ secrets.IONOS_USER }}
-          SSH_PASSWORD: ${{ secrets.IONOS_PASSWORD }}
-          SOURCE: "."
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.IONOS_HOST }}
+          REMOTE_USER: ${{ secrets.IONOS_USER }}
           TARGET: "./api-crj"
           ARGS: "-rltgoDzvO --delete --exclude=.git --exclude=.env --exclude=node_modules"
