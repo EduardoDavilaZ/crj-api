@@ -11,7 +11,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
       - name: Setup PHP & Composer
         uses: shivammathur/setup-php@v2
         with:
@@ -21,11 +20,19 @@ jobs:
       - name: Install dependencies (No Dev)
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
-      - name: Deploy via rsync over SSH
-        uses: easingthemes/ssh-deploy@v6
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.IONOS_HOST }}
-          REMOTE_USER: ${{ secrets.IONOS_USER }}
-          TARGET: "./api-crj"
-          ARGS: "-rltgoDzvO --delete --exclude=.git --exclude=.env --exclude=node_modules"
+      - name: Deploy to IONOS via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.IONOS_HOST }}
+          username: ${{ secrets.IONOS_USER }}
+          password: ${{ secrets.IONOS_PASSWORD }}
+          protocol: sftp
+          port: 22
+          local-dir: ./
+          server-dir: ./api-crj/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/storage/*.key
