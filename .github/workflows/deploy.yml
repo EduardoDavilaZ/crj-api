@@ -21,11 +21,11 @@ jobs:
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
       - name: Deploy via rsync over SSH
-        uses: easingthemes/ssh-deploy@v5
+        uses: easingthemes/ssh-deploy@v6
         env:
           SSH_HOST: ${{ secrets.IONOS_HOST }}
           SSH_USER: ${{ secrets.IONOS_USER }}
           SSH_PASSWORD: ${{ secrets.IONOS_PASSWORD }}
           SOURCE: "."
-          TARGET: "./api-crj" # Carpeta en tu IONOS donde se subirá el proyecto
+          TARGET: "./api-crj"
           ARGS: "-rltgoDzvO --delete --exclude=.git --exclude=.env --exclude=node_modules"
