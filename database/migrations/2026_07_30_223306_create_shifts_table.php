@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
             $table->foreignId('location_id')->constrained('locations')->onDelete('cascade');
             $table->integer('max_volunteers')->default(10);
-            $table->string('day'); // Ejemplo: "Lunes", "Martes"...
+            $table->string('day')->nullable();
             $table->date('date')->nullable();
             $table->time('start_time');
             $table->time('end_time');
