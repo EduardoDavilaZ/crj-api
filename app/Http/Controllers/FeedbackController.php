@@ -4,18 +4,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Feedback;
 use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 class FeedbackController extends Controller
 {
-    // 1. Crear un comentario anónimo y generar código único de 4 caracteres
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'nullable|string|max:50',
             'comment' => 'required|string|max:1000',
         ]);
 
-        // Generar un código único alfanumérico en mayúsculas de 4 caracteres
         do {
             $code = strtoupper(Str::random(4));
         } while (Feedback::where('code', $code)->exists());
@@ -27,13 +26,12 @@ class FeedbackController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Feedback enviado con éxito',
-            'code' => $code // Se devuelve al frontend para que el usuario lo guarde
+            'message' => 'Comentario enviado con éxito',
+            'code' => $code
         ], 201);
     }
 
-    // 2. Consultar el estado y respuesta del comentario mediante el código
-    public function show($code)
+    public function show(string $code): JsonResponse
     {
         $feedback = Feedback::where('code', strtoupper($code))->first();
 
@@ -44,7 +42,7 @@ class FeedbackController extends Controller
         return response()->json([
             'name' => $feedback->name,
             'comment' => $feedback->comment,
-            'response' => $feedback->response, // Si el admin no ha respondido, vendrá null
+            'response' => $feedback->response,
             'created_at' => $feedback->created_at,
         ]);
     }

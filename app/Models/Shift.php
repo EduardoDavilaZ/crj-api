@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Shift extends Model
 {
-    protected $fillable = ['project_id', 'location_id', 'max_volunteers', 'day', 'date', 'start_time', 'end_time'];
+    protected $fillable = ['project_id', 'location_id', 'max_volunteers', 'day', 'date', 'start_time', 'end_time', 'is_active'];
 
     public function project(): BelongsTo
     {
@@ -23,5 +23,10 @@ class Shift extends Model
     public function registrations(): BelongsToMany
     {
         return $this->belongsToMany(Registration::class, 'registration_shift');
+    }
+
+    public static function findShiftById(int $id): ?Shift
+    {
+        return self::find($id);
     }
 }

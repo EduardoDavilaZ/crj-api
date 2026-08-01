@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->string('title');
             $table->text('description')->nullable();
+            $table->string('project_type')->default('ordinary');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

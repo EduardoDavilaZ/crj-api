@@ -17,10 +17,10 @@ Route::get('/test', function () {
     ]);
 });
 
-Route::post('/registrations', [RegistrationController::class, 'store']);
+Route::post('/register-shift', [RegistrationController::class, 'store']);
 
-Route::post('/feedbacks', [FeedbackController::class, 'store']);
-Route::get('/feedbacks/{code}', [FeedbackController::class, 'show']);
+Route::post('/feedback', [FeedbackController::class, 'store']);
+Route::get('/feedback/{code}', [FeedbackController::class, 'show']);
 
 
 Route::get('/get-projects-with-shifts', [ProjectController::class, 'getProjectsWithShifts']);
@@ -30,3 +30,5 @@ Route::get('/get-locations', [LocationController::class, 'getLocations']);
 Route::get('/location', [LocationController::class, 'getLocations']);
 Route::get('/location/{id}', [LocationController::class, 'getLocationsById']);
 Route::get('/project/{id}/location', [LocationController::class, 'getLocationsByProject']);
+
+Route::get('/project/{id}/shifts', [ProjectController::class, 'getShiftsByProject']);

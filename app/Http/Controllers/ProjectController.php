@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Location;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
@@ -15,7 +16,8 @@ class ProjectController extends Controller
 
             $uniqueDays = [];
 
-            $filteredShifts = $project->shifts->filter(function ($shift) use (&$uniqueDays) {
+            // Filtramos primero los turnos activos y luego aplicamos tu lógica de fechas/días
+            $filteredShifts = $project->shifts->where('is_active', true)->filter(function ($shift) use (&$uniqueDays) {
                 if ($shift->date) {
                     $shiftDate = Carbon::parse($shift->date);
                     $dayKey = $shiftDate->toDateString();
@@ -78,5 +80,20 @@ class ProjectController extends Controller
         });
 
         return response()->json($formattedProjects);
+    }
+
+    public function getShiftsByProject(int $projectId): JsonResponse {
+        $locations = Location::whereHas('shifts', function($query) use ($projectId) {
+            $query->where('project_id', $projectId)
+                ->where('is_active', true);
+        })->with([
+            'shifts' => function($query) use ($projectId) {
+                $query->where('project_id', $projectId)
+                    ->where('is_active', true)
+                    ->with('registrations'); // <--- AÑADIDO AQUÍ: Trae los voluntarios de cada turno
+            }
+        ])->get();
+
+        return response()->json($locations);
     }
 }

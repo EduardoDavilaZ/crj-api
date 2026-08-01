@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->date('date')->nullable();
             $table->time('start_time');
             $table->time('end_time');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

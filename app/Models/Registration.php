@@ -9,8 +9,10 @@ class Registration extends Model
 {
     protected $fillable = ['name', 'needs_vest'];
 
-    public function shifts(): BelongsToMany
+    public function shifts()
     {
-        return $this->belongsToMany(Shift::class, 'registration_shift');
+        return $this->belongsToMany(Shift::class, 'registration_shift')
+                    ->withPivot('date')
+                    ->withTimestamps();
     }
 }
