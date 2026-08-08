@@ -83,50 +83,14 @@ class ProjectController extends Controller
     }
 
     public function getShiftsByProject(int $projectId): JsonResponse {
-        // 1. Buscamos el proyecto para saber su tipo (ordinario u ocasional)
-        $project = Project::find($projectId);
-
-        // 2. Calculamos el rango de la semana actual (exactamente igual que en tu frontend)
-        $now = Carbon::now('Europe/Madrid');
-        $currentDayOfWeek = $now->dayOfWeek; // 0 (Domingo) a 6 (Sábado)
-        $currentHour = $now->hour;
-
-        $isNextWeek = ($currentDayOfWeek === Carbon::FRIDAY && $currentHour >= 12) ||
-                      $currentDayOfWeek === Carbon::SATURDAY ||
-                      $currentDayOfWeek === Carbon::SUNDAY;
-
-        $distanceToMonday = $currentDayOfWeek === 0 ? -6 : 1 - $currentDayOfWeek;
-        $monday = $now->copy()->addDays($distanceToMonday)->startOfDay();
-
-        if ($isNextWeek) {
-            $monday->addDays(7);
-        }
-
-        // Definimos el fin de semana según el tipo de proyecto
-        if ($project && $project->project_type === 'occasional') {
-            $endDate = $monday->copy()->addDays(6)->endOfDay(); // Domingo para ocasionales
-        } else {
-            $endDate = $monday->copy()->addDays(4)->endOfDay(); // Viernes para ordinarios
-        }
-
-        // 3. Consultamos las ubicaciones y filtramos los turnos y sus registros por el rango de fechas calculado
         $locations = Location::whereHas('shifts', function($query) use ($projectId) {
             $query->where('project_id', $projectId)
                 ->where('is_active', true);
         })->with([
-            'shifts' => function($query) use ($projectId, $monday, $endDate) {
+            'shifts' => function($query) use ($projectId) {
                 $query->where('project_id', $projectId)
                     ->where('is_active', true)
-                    ->with([
-                        'registrations' => function($regQuery) use ($monday, $endDate) {
-                            // Filtramos la tabla pivote 'registration_shift' para que solo traiga
-                            // los apuntados en la fecha correspondiente a esta semana
-                            $regQuery->whereBetween('registration_shift.date', [
-                                $monday->toDateString(),
-                                $endDate->toDateString()
-                            ]);
-                        }
-                    ]);
+                    ->with('registrations'); // <--- AÑADIDO AQUÍ: Trae los voluntarios de cada turno
             }
         ])->get();
 
