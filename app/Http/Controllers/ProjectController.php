@@ -16,7 +16,6 @@ class ProjectController extends Controller
 
             $uniqueDays = [];
 
-            // Filtramos primero los turnos activos y luego aplicamos tu lógica de fechas/días
             $filteredShifts = $project->shifts->where('is_active', true)->filter(function ($shift) use (&$uniqueDays) {
                 if ($shift->date) {
                     $shiftDate = Carbon::parse($shift->date);
@@ -82,15 +81,46 @@ class ProjectController extends Controller
         return response()->json($formattedProjects);
     }
 
-    public function getShiftsByProject(int $projectId): JsonResponse {
+    public function getShiftsByProject(int $projectId): JsonResponse
+    {
+        $project = Project::find($projectId);
+
+        $now = Carbon::now('Europe/Madrid');
+        $currentDayOfWeek = $now->dayOfWeek; // 0 (Domingo) a 6 (Sábado)
+        $currentHour = $now->hour;
+
+        $isNextWeek = ($currentDayOfWeek === Carbon::FRIDAY && $currentHour >= 12) ||
+                      $currentDayOfWeek === Carbon::SATURDAY ||
+                      $currentDayOfWeek === Carbon::SUNDAY;
+
+        $distanceToMonday = $currentDayOfWeek === 0 ? -6 : 1 - $currentDayOfWeek;
+        $monday = $now->copy()->addDays($distanceToMonday)->startOfDay();
+
+        if ($isNextWeek) {
+            $monday->addDays(7);
+        }
+
+        if ($project && $project->project_type === 'occasional') {
+            $endDate = $monday->copy()->addDays(6)->endOfDay(); // Domingo para ocasionales
+        } else {
+            $endDate = $monday->copy()->addDays(4)->endOfDay(); // Viernes para ordinarios
+        }
+
         $locations = Location::whereHas('shifts', function($query) use ($projectId) {
             $query->where('project_id', $projectId)
                 ->where('is_active', true);
         })->with([
-            'shifts' => function($query) use ($projectId) {
+            'shifts' => function($query) use ($projectId, $monday, $endDate) {
                 $query->where('project_id', $projectId)
                     ->where('is_active', true)
-                    ->with('registrations'); // <--- AÑADIDO AQUÍ: Trae los voluntarios de cada turno
+                    ->with([
+                        'registrations' => function($regQuery) use ($monday, $endDate) {
+                            $regQuery->whereBetween('registration_shift.date', [
+                                $monday->toDateString(),
+                                $endDate->toDateString()
+                            ]);
+                        }
+                    ]);
             }
         ])->get();
 
