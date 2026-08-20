@@ -5,6 +5,9 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\MemeController;
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\CraftController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,3 +35,13 @@ Route::get('/location/{id}', [LocationController::class, 'getLocationsById']);
 Route::get('/project/{id}/location', [LocationController::class, 'getLocationsByProject']);
 
 Route::get('/project/{id}/shifts', [ProjectController::class, 'getShiftsByProject']);
+
+Route::get('/memes', [MemeController::class, 'index']);
+
+
+Route::get('/age-ranges', [ActivityController::class, 'getAgeRanges']);
+Route::get('/activity-types', [ActivityController::class, 'getActivityTypes']);
+Route::get('/activity', [ActivityController::class, 'getActivity']);
+
+Route::get('/crafts/age-ranges', [CraftController::class, 'getAgeRanges']);
+Route::get('/craft', [CraftController::class, 'getCraft']);
